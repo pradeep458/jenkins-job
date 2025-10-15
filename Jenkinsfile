@@ -28,7 +28,7 @@ pipeline {
         }
         stage('Build and Push docker image') {
            steps {
-              withCredentials([usernamePassword(credentialsId: 'docker-hub-creds', usernameVariable: 'USER', passwordVariable: 'PASS')]) {
+              withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', usernameVariable: 'USER', passwordVariable: 'PASS')]) {
                   sh """
                      cd app
                      docker build -t docker-hub-id/myapp:${VERSION}-${BUILD_NUMBER} .
