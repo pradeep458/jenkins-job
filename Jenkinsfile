@@ -32,7 +32,7 @@ pipeline {
                     sh 'docker pull node:20-alpine'
                     sh "docker build -t docker-hub-id/myapp:${IMAGE_NAME} ."
                     sh 'echo $PASS | docker login -u $USER --password-stdin'
-                    sh "docker push snrmartins/cloud-basics-exercises:${IMAGE_NAME}"
+                    sh "docker push docker-hub-id/myapp:${IMAGE_NAME}"
                 }
             }
         }
