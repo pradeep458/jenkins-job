@@ -27,14 +27,11 @@ pipeline {
             }
         }
         stage('Build and Push docker image') {
-           steps {
-               withCredentials([usernamePassword(credentialsId: 'docker-hub-creds', usernameVariable: 'USER', passwordVariable: 'PASS')]) {
-                   sh """
-                     cd ..
-                     docker build -t docker-hub-id/myapp:${VERSION}-${BUILD_NUMBER} .
-                     echo $PASS | docker login -u $USER --password-stdin
-                     docker push docker-hub-id/myapp:${VERSION}-${BUILD_NUMBER}
-                   """
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'docker-credentials', usernameVariable: 'USER', passwordVariable: 'PASS')]){
+                    sh "docker build -t docker-hub-id/myapp:${IMAGE_NAME} ."
+                    sh 'echo $PASS | docker login -u $USER --password-stdin'
+                    sh "docker push docker-hub-id/myapp:${IMAGE_NAME}"
                 }
             }
         }
