@@ -31,9 +31,9 @@ pipeline {
               withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', usernameVariable: 'USER', passwordVariable: 'PASS')]) {
                   sh """
                      cd app
-                     docker build -t snrmartins/myapp:${VERSION}-${BUILD_NUMBER} .
+                     docker build -t SnrMartins/myapp:${VERSION}-${BUILD_NUMBER} .
                      echo $PASS | docker login -u $USER --password-stdin
-                     docker push snrmartins/myapp:${env.VERSION}-${BUILD_NUMBER}
+                     docker push SnrMartins/myapp:${env.VERSION}-${BUILD_NUMBER}
                   """
                 }
             }
