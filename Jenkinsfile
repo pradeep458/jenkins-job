@@ -10,7 +10,7 @@ pipeline {
                     dir("app") {
                         sh "npm version minor --no-git-tag-version"
                         def packageJson = readJSON file: 'package.json'
-                        def VERSION = packageJson.version
+                        env.VERSION = packageJson.version?.trim()
                         echo "version updated to ${env.VERSION}"
                     }
                 }
@@ -33,7 +33,7 @@ pipeline {
                      cd app
                      docker build -t docker-hub-id/myapp:${VERSION}-${BUILD_NUMBER} .
                      echo $PASS | docker login -u $USER --password-stdin
-                     docker push docker-hub-id/myapp:${VERSION}-${BUILD_NUMBER}
+                     docker push docker-hub-id/myapp:${env.VERSION}-${BUILD_NUMBER}
                   """
                 }
             }
