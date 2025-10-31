@@ -1,53 +1,71 @@
+#!/usr/bin/env groovy
+
+library identifier: 'jenkins-shared-library@master', retriever: modernSCM(
+    [$class: 'GitSCMSource',
+    remote: 'https://gitlab.com/twn-devops-bootcamp/latest/09-aws/jenkins-shared-library.git',
+    credentialsID: 'gitlab-credentials'
+    ]
+)
+
 pipeline {
     agent any
     tools {
-        nodejs "node"
+        maven 'maven-3.9'
     }
     stages {
         stage('increment version') {
             steps {
                 script {
-                    dir("app") {
-                        sh "npm version minor --no-git-tag-version"
-                        def packageJson = readJSON file: 'package.json'
-                        env.VERSION = packageJson.version?.trim()
-                        echo "version updated to ${env.VERSION}"
-                    }
+                    echo 'incrementing app version...'
+                    sh 'mvn build-helper:parse-version versions:set \
+                        -DnewVersion=\\\${parsedVersion.majorVersion}.\\\${parsedVersion.minorVersion}.\\\${parsedVersion.nextIncrementalVersion} \
+                        versions:commit'
+                    def matcher = readFile('pom.xml') =~ '<version>(.+)</version>'
+                    def version = matcher[0][1]
+                    env.IMAGE_NAME = "$version-$BUILD_NUMBER"
                 }
             }
         }
-        stage('Run tests') {
+        stage('build app') {
             steps {
-               script {
-                    dir("app") {
-                        sh "npm install"
-                        sh "npm run test"
-                    } 
-               }
+                echo 'building application jar...'
+                buildJar()
             }
         }
-        stage('Build and Push docker image') {
-           steps {
-              withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', usernameVariable: 'USER', passwordVariable: 'PASS')]) {
-                  sh """
-                     cd app
-                     docker build -t snrmartins/myapp:${VERSION}-${BUILD_NUMBER} .
-                     echo $PASS | docker login -u $USER --password-stdin
-                     docker push snrmartins/myapp:${env.VERSION}-${BUILD_NUMBER}
-                  """
-                }
-            }
-        }         
-        stage('commit version update') {
+        stage('build image') {
             steps {
                 script {
-                    withCredentials([usernamePassword(credentialsId: 'gitlab-credentials', usernameVariable: 'USER', passwordVariable: 'PASS')]) {
-                        sh 'git config --global user.email "jenkins@example.com"'
-                        sh 'git config --global user.name "jenkins"'
-                        sh 'git remote set-url origin https://$USER:$PASS@gitlab.com/SnrMartins/java-maven-app.git'
+                    echo 'building the docker image...'
+                    buildImage(env.IMAGE_NAME)
+                    dockerLogin()
+                    dockerPush(env.IMAGE_NAME)
+                }
+            }
+        } 
+        stage("deploy") {
+            steps {
+                script {
+                    echo 'deploying docker image to EC2...'
+
+                    def shellCmd = "bash ./server-cmds.sh ${IMAGE_NAME}"
+                    def ec2Instance = "ec2-user@18.184.54.160"
+
+                    sshagent(['ec2-server-key']) {
+                        sh "scp server-cmds.sh ${ec2Instance}:/home/ec2-user"
+                        sh "scp docker-compose.yaml ${ec2Instance}:/home/ec2-user"
+                        sh "ssh -o StrictHostKeyChecking=no ${ec2Instance} ${shellCmd}"
+                    }
+                }
+            }               
+        }
+        stage('commit version update'){
+            steps {
+                script {
+                    withCredentials([usernamePassword(credentialsId: 'gitlab-credentials', passwordVariable: 'PASS', usernameVariable: 'USER')]){
+                        sh 'git remote set-url origin https://$USER:$PASS@gitlab.com/twn-devops-bootcamp/latest/09-AWS/java-maven-app.git'
                         sh 'git add .'
                         sh 'git commit -m "ci: version bump"'
-                        sh 'git push origin HEAD:jenkins-jobs --force'
+                        sh 'git push origin HEAD:jenkins-jobs'
                     }
                 }
             }
