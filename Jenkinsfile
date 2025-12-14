@@ -1,6 +1,6 @@
 #!/usr/bin/env groovy
 library identifier: 'shared-lib@main', retriever: modernSCM(
-[$class: 'com.cloudbees.jenkins.plugins.github_branch_source.GitHubSCMSource', // Explicitly use the full class name for best practice
+[$class: 'GitHubSCMSource', // Explicitly use the full class name for best practice
 repoOwner: 'pradeep458',
 repository: 'shared-lib',
 credentialsId: 'github-credentials']) // Ensure this ID is correct
