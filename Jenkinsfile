@@ -7,7 +7,7 @@ credentialsId: 'github-credentials']) // Ensure this ID is correct
 
 def gv
 
-pipeline {   
+pipeline {  
     agent any
     tools {
         maven 'maven-3.9'
