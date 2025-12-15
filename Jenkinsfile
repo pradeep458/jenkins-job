@@ -56,6 +56,9 @@ pipeline {
                         sh 'git status'
                         sh 'git branch'
                         sh 'git config --list'
+                        sh 'git show-ref --heads'
+                        sh 'git rev-parse --abbrev-ref HEAD'
+
                         echo "${USER}"                        
                         echo "${PASS}"
 
