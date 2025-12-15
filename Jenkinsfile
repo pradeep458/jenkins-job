@@ -46,29 +46,36 @@ pipeline {
                 }
             }
         }
-        stage('commit version update'){
+        stage('commit version update') {
             steps {
                 script {
-                    withCredentials([usernamePassword(credentialsId: 'github-credentials', passwordVariable: 'PASS', usernameVariable: 'USER')]){
-                        sh 'git config --global user.email "jenkins@example.com"'
-                        sh 'git config --global user.name "jenkins"'
-
-                        sh 'git status'
-                        sh 'git branch'
-                        sh 'git config --list'
-                        sh 'git show-ref --heads || true'
-                        sh 'git rev-parse --abbrev-ref HEAD'
-
-                        echo "${USER}"                        
-                        echo "${PASS}"
-
-                        sh "git remote set-url origin https://${USER}:${PASS}@github.com/pradeep458/jenkins-job.git" 
-                        sh 'git add .'
-                        sh 'git commit -m "ci: version bump"'
-                        sh 'git push origin HEAD:jenkins-jobs'
+                    withCredentials([string(credentialsId: 'github-webhook', variable: 'GITHUB_TOKEN')]) {
+        
+                        sh '''
+                          set -e
+        
+                          git config user.email "jenkins@example.com"
+                          git config user.name "jenkins"
+        
+                          echo "Git status before commit:"
+                          git status
+        
+                          # Detached HEAD is normal in Jenkins
+                          git branch -a
+        
+                          # Use PAT safely (no username, no URL breakage)
+                          git remote set-url origin https://x-access-token:${GITHUB_TOKEN}@github.com/pradeep458/jenkins-job.git
+        
+                          git add .
+                          git commit -m "ci: version bump" || echo "Nothing to commit"
+        
+                          git push origin HEAD:jenkins-jobs
+                        '''
                     }
                 }
             }
-         }
         }
     }
+}
+        
+          
