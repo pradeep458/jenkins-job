@@ -56,8 +56,8 @@ pipeline {
                         sh 'git status'
                         sh 'git branch'
                         sh 'git config --list'
-                        echo $USER
-                        echo $PASS
+                        echo "${USER}"                        
+                        echo "${PASS}"
 
                         sh "git remote set-url origin https://${USER}:${PASS}@github.com/pradeep458/jenkins-job.git" 
                         sh 'git add .'
