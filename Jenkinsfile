@@ -20,7 +20,7 @@ pipeline {
             }
             steps {
                 script {
-                    echo "Building the application...."
+                    echo "Building the application for multi-branch...."
                 }
             }
         }
@@ -33,7 +33,7 @@ pipeline {
             }
             steps {
                 script {
-                    echo "Deploying the application...."
+                    echo "Deploying the application multi-branch...."
                 }
             }
         }               
