@@ -49,7 +49,7 @@ pipeline {
         stage('commit version update') {
             steps {
                 script {
-                    withCredentials([string(credentialsId: 'github-webhook', variable: 'GITHUB_TOKEN')]) {
+                    withCredentials([string(credentialsId: 'git-commit-token', variable: 'GITHUB_TOKEN')]) {
         
                         sh '''
                           set -e
