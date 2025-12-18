@@ -1,41 +1,40 @@
-pipeline {   
+pipeline {
     agent any
+
     stages {
         stage("test") {
             steps {
-                script {
-                    echo "Testing the application...."
-                    echo "Executing pipeline for branch $BRANCH_NAME"
-
-
-                }
+                echo "Testing the application...."
+                echo "Executing pipeline for branch ${BRANCH_NAME}"
             }
         }
-        
+
         stage("build") {
-            when{
-                expression{
-                    BRANCH_NAME == "master"
-                }
+            when {
+                expression { BRANCH_NAME == "master" }
             }
             steps {
-                script {
-                    echo "Building the application for multi-branch...."
-                }
+                echo "Building the application for multi-branch...."
             }
         }
 
         stage("deploy") {
-            when{
-                expression{
-                    BRANCH_NAME == "master"
-                }
+            when {
+                expression { BRANCH_NAME == "jenkins-jobs" }
             }
             steps {
                 script {
                     echo "Deploying the application for multi-branch...."
+
+                    def dockerCmd = "docker run -p 3000:3000 -d pradeepmat/demo-app:1.1.10-26"
+
+                    sshagent(['deploy-app']) {
+                        sh """
+                           ssh -o StrictHostKeyChecking=no deploy-app@70.153.24.213 '${dockerCmd}'
+                        """
+                    }
                 }
             }
-        }               
+        }
     }
-} 
+}
