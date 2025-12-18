@@ -26,7 +26,7 @@ pipeline {
                 script {
                     echo "Deploying the application for multi-branch...."
 
-                    def dockerCmd = "docker run -p 3000:3000 -d pradeepmat/demo-app:1.1.10-26"
+                    def dockerCmd = "docker run -p 3000:8080 -d pradeepmat/demo-app:1.1.10-26"
 
                     sshagent(['deploy-app']) {
                         sh """
