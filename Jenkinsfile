@@ -23,7 +23,8 @@ pipeline {
                 withKubeConfig([credentialsId: 'my-aks-kubeconfig']) {
                     script {
                         echo 'Deploying to Azure Kubernetes Service...'
-                        
+
+                        sh 'rm -rf var/jenkins_home/.kube/cache/'
                         // Check if deployment exists or apply a file
                         // Using 'apply' is better practice than 'create' for CI/CD
                         sh 'kubectl apply -f nginx.yaml'
