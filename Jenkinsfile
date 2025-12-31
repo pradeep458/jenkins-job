@@ -1,41 +1,44 @@
-pipeline {   
+#!/usr/bin/env groovy
+
+pipeline {
     agent any
+    
     stages {
-        stage("test") {
+        stage('Build App') {
             steps {
-                script {
-                    echo "Testing the application...."
-                    echo "Executing pipeline for branch $BRANCH_NAME"
-
-
-                }
+                echo "Building the application..."
             }
         }
         
-        stage("build") {
-            when{
-                expression{
-                    BRANCH_NAME == "master"
-                }
-            }
+        stage('Build Image') {
             steps {
-                script {
-                    echo "Building the application for multi-branch...."
-                }
+                echo "Building the docker image..."
             }
         }
 
-        stage("deploy") {
-            when{
-                expression{
-                    BRANCH_NAME == "master"
-                }
-            }
+        stage('Deploy to AKS') {
             steps {
-                script {
-                    echo "Deploying the application multi-branch...."
+                // Use the Kubernetes CLI Plugin to handle the Kubeconfig securely
+                // This replaces the need for AWS_ACCESS_KEY env vars
+                withKubeConfig([credentialsId: 'my-aks-kubeconfig']) {
+                    script {
+                        echo 'Deploying to Azure Kubernetes Service...'
+                        
+                        // Check if deployment exists or apply a file
+                        // Using 'apply' is better practice than 'create' for CI/CD
+                        sh 'kubectl apply -f deployment.yaml'
+                        
+                        // Example of the command you used, updated for best practice:
+                        // sh 'kubectl create deployment nginx-deployment --image=nginx --dry-run=client -o yaml | kubectl apply -f -'
+                    }
                 }
             }
-        }               
+        }
     }
-} 
+    
+    post {
+        always {
+            cleanWs()
+        }
+    }
+}
