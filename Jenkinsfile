@@ -22,7 +22,7 @@ pipeline {
                 // This replaces the need for AWS_ACCESS_KEY env vars
                 withKubeConfig([credentialsId: 'my-aks-kubeconfig']) {
                     script {
-                        echo 'Deploying to Azure Kubernetes Service...'
+                        echo 'Deploying to Azure Kubernetes Service... jenkins-jobs branch'
 
                         // Check if deployment exists or apply a file
                         // Using 'apply' is better practice than 'create' for CI/CD
