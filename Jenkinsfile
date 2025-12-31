@@ -1,40 +1,44 @@
+#!/usr/bin/env groovy
+
 pipeline {
     agent any
-
+    
     stages {
-        stage("test") {
+        stage('Build App') {
             steps {
-                echo "Testing the application...."
-                echo "Executing pipeline for branch ${BRANCH_NAME}"
+                echo "Building the application..."
+            }
+        }
+        
+        stage('Build Image') {
+            steps {
+                echo "Building the docker image..."
             }
         }
 
-        stage("build") {
-            when {
-                expression { BRANCH_NAME == "master" }
-            }
+        stage('Deploy to AKS') {
             steps {
-                echo "Building the application for multi-branch...."
-            }
-        }
-
-        stage("deploy") {
-            when {
-                expression { BRANCH_NAME == "jenkins-jobs" }
-            }
-            steps {
-                script {
-                    echo "Deploying the application for multi-branch...."
-
-                    def dockerCmd = "docker run -p 3000:8080 -d pradeepmat/demo-app:1.1.10-26"
-
-                    sshagent(['deploy-app']) {
-                        sh """
-                           ssh -o StrictHostKeyChecking=no deploy-app@70.153.24.213 '${dockerCmd}'
-                        """
+                // Use the Kubernetes CLI Plugin to handle the Kubeconfig securely
+                // This replaces the need for AWS_ACCESS_KEY env vars
+                withKubeConfig([credentialsId: 'my-aks-kubeconfig']) {
+                    script {
+                        echo 'Deploying to Azure Kubernetes Service...'
+                        
+                        // Check if deployment exists or apply a file
+                        // Using 'apply' is better practice than 'create' for CI/CD
+                        sh 'kubectl apply -f deployment.yaml'
+                        
+                        // Example of the command you used, updated for best practice:
+                        // sh 'kubectl create deployment nginx-deployment --image=nginx --dry-run=client -o yaml | kubectl apply -f -'
                     }
                 }
             }
+        }
+    }
+    
+    post {
+        always {
+            cleanWs()
         }
     }
 }
