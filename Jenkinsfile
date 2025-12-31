@@ -31,7 +31,7 @@ pipeline {
                         // sh 'kubectl get pods'
 
                         // Example of the command you used, updated for best practice:
-                        sh 'kubectl create deployment nginx-deployment --image=nginx --dry-run=client -o yaml | kubectl apply -f - --validate=false'
+                        sh 'kubectl create deployment nginx-deployment --image=nginx --dry-run=client -o yaml | kubectl apply -f - '
                     }
                 }
             }
