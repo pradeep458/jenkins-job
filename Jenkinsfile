@@ -29,7 +29,6 @@ pipeline {
                         sh 'kubectl apply -f nginx.yaml'
                         sh 'kubectl get nodes'
                         sh 'kubectl get pods'
-                        sh 'rm -rf var/jenkins_home/.kube/cache/'
 
                         // Example of the command you used, updated for best practice:
                         // sh 'kubectl create deployment nginx-deployment --image=nginx --dry-run=client -o yaml | kubectl apply -f -'
